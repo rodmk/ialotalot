@@ -84,7 +84,7 @@ function getStreamHandler() {
 
         last_tweet = Date.now();
         // Pick a random function to use next
-        fn_id = Math.floor((Math.random() * resp_fns.length) + 1);
+        fn_id = Math.floor(Math.random() * resp_fns.length);
       }
     }
   };
