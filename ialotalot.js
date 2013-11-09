@@ -1,3 +1,5 @@
+require("newrelic"); // Used for metrics and keepalive
+
 var Twit = require("twit");
 var util = require("util");
 
