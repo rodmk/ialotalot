@@ -43,26 +43,23 @@ function captureGroupRegexReply(regex, reply) {
   };
 }
 
+// Response functions, evaluated in order, and we take the first to return a
+// response.
 var resp_fns = [
   captureGroupRegexReply(
-    /I (\w+) (\w+)[ ,\.]* alot/i,
-    "Alot %s %s as well! :D"
+    /I love (\w+) alot/i,
+    "Alot love %s too! <3"
   ),
   captureGroupRegexReply(
-    /alot of (\w+)/i,
-    "Alot love his cousin, the %s alot, a whole lot!"
-  ),
-  captureGroupRegexReply(
-    /alot of (\w+)/i,
-    "%s alot is the best alot ever!"
+    /I like (\w+) alot/i,
+    "Alot like %s too! :D"
   ),
 ];
 
 function statusUpdateCallback(err, reply) {}
 
 function getStreamHandler() {
-  var fn_id = 0;
-  var MIN_WAIT_TIME = 60000; // 60s in ms
+  var MIN_WAIT_TIME = 5 * 60 * 1000; // 5min
   var last_tweet = Date.now() - MIN_WAIT_TIME;
   var alot_patt = /alot/i;
   return function(tweet) {
@@ -70,23 +67,23 @@ function getStreamHandler() {
         !isRetweet(tweet) &&
         alot_patt.test(tweet.text)) {
       // Cycle through response types
-      var res = resp_fns[fn_id](tweet.text);
-      if (res) {
-        var status = util.format(
-          "@%s %s",
-          tweet.user.screen_name,
-          res.toUpperCase()
-        );
+      for (var fn_id = 0; fn_id < resp_fns.length; fn_id++) {
+        var res = resp_fns[fn_id](tweet.text);
+        if (res) {
+          var status = util.format(
+            "@%s %s",
+            tweet.user.screen_name,
+            res.toUpperCase()
+          );
 
-        T.post(
-          "statuses/update",
-          { status: status, in_reply_to_status_id: tweet.id_str },
-          statusUpdateCallback
-        );
+          T.post(
+            "statuses/update",
+            { status: status, in_reply_to_status_id: tweet.id_str },
+            statusUpdateCallback
+          );
 
-        last_tweet = Date.now();
-        // Pick a random function to use next
-        fn_id = Math.floor(Math.random() * resp_fns.length);
+          last_tweet = Date.now();
+        }
       }
     }
   };
